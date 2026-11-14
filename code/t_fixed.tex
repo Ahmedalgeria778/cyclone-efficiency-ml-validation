@@ -1,0 +1,13 @@
+\begin{tabular}{lcccc}\toprule Model & \multicolumn{2}{c}{Raw 7 inputs} & \multicolumn{2}{c}{17 features}\\ & $R^2$ & RMSE & $R^2$ & RMSE\\\midrule
+GBR & 0.727$\pm$0.143 & 0.174 & 0.738$\pm$0.111 & 0.172\\
+XGB & 0.723$\pm$0.145 & 0.175 & 0.733$\pm$0.125 & 0.172\\
+LGBM & 0.750$\pm$0.105 & 0.168 & 0.750$\pm$0.101 & 0.168\\
+CatBoost & 0.724$\pm$0.118 & 0.177 & 0.739$\pm$0.105 & 0.172\\
+RF & 0.718$\pm$0.118 & 0.178 & 0.729$\pm$0.120 & 0.174\\
+HGB & 0.753$\pm$0.097 & 0.167 & 0.746$\pm$0.109 & 0.169\\
+MLP & 0.511$\pm$0.206 & 0.236 & 0.686$\pm$0.198 & 0.183\\
+\midrule\multicolumn{5}{l}{Baselines (no machine learning)}\\
+Lapple(N=5) & \multicolumn{2}{c}{0.286$\pm$0.371} & \multicolumn{2}{c}{RMSE 0.279}\\
+Lapple(N fitted) & \multicolumn{2}{c}{0.226$\pm$0.349} & \multicolumn{2}{c}{RMSE 0.293}\\
+Stk-only fit & \multicolumn{2}{c}{0.441$\pm$0.192} & \multicolumn{2}{c}{RMSE 0.252}\\
+\bottomrule\end{tabular}
