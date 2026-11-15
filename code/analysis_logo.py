@@ -16,11 +16,11 @@ for (fs,mn),d in PG.groupby(['fset','model']):
     summ.append(dict(fset=fs,model=mn,r2_w=wm,r2_sd=wsd,r2_med=d.r2.median(),n_good=(d.r2>0.5).sum(),n_marg=((d.r2>0)&(d.r2<=0.5)).sum(),n_fail=(d.r2<=0).sum(),
                      pooled_r2=pm['r2'],pooled_rmse=pm['rmse'],pooled_mae=pm['mae'],mean_geom_rmse=d.rmse.mean(),median_geom_rmse=d.rmse.median()))
 SM=pd.DataFrame(summ); SM.to_csv('logo_summary.csv',index=False); print(SM.round(3).to_string())
-# --- paired ablation significance (per-geometry RMSE, raw vs full14) via Wilcoxon + bootstrap over geometries
+# --- paired ablation significance (per-geometry RMSE, raw vs full17) via Wilcoxon + bootstrap over geometries
 from scipy.stats import wilcoxon
 abl=[]
 for mn in ['GBR','XGB','LGBM','CatBoost','RF','HGB','MLP']:
-    a=PG[(PG.fset=='raw')&(PG.model==mn)].set_index('gid').rmse; b=PG[(PG.fset=='full14')&(PG.model==mn)].set_index('gid').rmse
+    a=PG[(PG.fset=='raw')&(PG.model==mn)].set_index('gid').rmse; b=PG[(PG.fset=='full17')&(PG.model==mn)].set_index('gid').rmse
     dlt=(b-a); rng=np.random.RandomState(0); bs=[dlt.sample(len(dlt),replace=True,random_state=rng).mean() for _ in range(2000)]
     try: pw=wilcoxon(a,b).pvalue
     except Exception: pw=np.nan
@@ -36,7 +36,7 @@ for g in gl:
     sd=tr.std(0); knn=np.sort(np.sqrt((((tr-x)/sd)**2).sum(1)))[:3].mean()
     rows.append(dict(gid=g,d_mahal=dm(x),thr95=thr,knn3=knn))
 MD=pd.DataFrame(rows).set_index('gid')
-ref=PG[(PG.fset=='full14')&(PG.model=='GBR')].set_index('gid')
+ref=PG[(PG.fset=='full17')&(PG.model=='GBR')].set_index('gid')
 MD['r2']=ref.r2; MD['rmse']=ref.rmse; MD['n']=ref.n; MD['flag']=MD.d_mahal>MD.thr95
 MD.to_csv('mahal.csv'); print(MD.round(3).to_string())
 def perm_p(x,y,B=5000):
@@ -57,7 +57,7 @@ for _ in range(2000):
 print('AUC bootstrap CI',np.percentile(aucs,[2.5,97.5])); out['auc']=(roc_auc_score(fail,MD.d_mahal),*np.percentile(aucs,[2.5,97.5]))
 print('flagged',MD.flag.sum(),' of which poor(R2<=0.5):',(MD.flag&(MD.r2<=0.5)).sum(),' poor total',(MD.r2<=0.5).sum())
 # --- Uncertainty: quadratic sigma(eta_hat) fitted on OOF residuals of the other 27 geometries
-R=P[(P.fset=='full14')&(P.model=='GBR')].copy(); R['res']=R.y-R.pred
+R=P[(P.fset=='full17')&(P.model=='GBR')].copy(); R['res']=R.y-R.pred
 def sig_model(Rtr,nb=10):
     bins=np.linspace(0,1,nb+1); ix=np.clip(np.digitize(Rtr.pred,bins)-1,0,nb-1); xs=[];ss=[]
     for k in range(nb):
@@ -96,11 +96,11 @@ tabq=[]
 for q,d in R.groupby('Req'):
     m=metrics(d.y,d.pred); sub=df[df.Req==q]; tabq.append(dict(q=q,Re_lo=sub.Re.min(),Re_hi=sub.Re.max(),n=len(d),n_geom=sub.gid.nunique(),n_cond=sub.cond.nunique(),eta_std=d.y.std(),frac_transition=((d.y>0.2)&(d.y<0.8)).mean(),**m))
 TQ=pd.DataFrame(tabq); TQ.to_csv('re_quartile.csv',index=False); print(TQ.round(3).to_string())
-# leave-Re-quartile-out (extrapolation in Re), GBR raw vs full14
+# leave-Re-quartile-out (extrapolation in Re), GBR raw vs full17
 rows=[]
 for q in ['Q1','Q2','Q3','Q4']:
     te=df[df.Req==q]; tr=df[df.Req!=q]; par=calibrate_pivc(tr)
-    for fs in ['raw','full14']:
+    for fs in ['raw','full17']:
         p=fit_predict('GBR',tr,te,fs,par); rows.append(dict(q=q,fset=fs,**metrics(te.eta,p)))
 LQ=pd.DataFrame(rows); LQ.to_csv('leave_Re_out.csv',index=False); print(LQ.round(3).to_string())
 # PiVC constants across folds

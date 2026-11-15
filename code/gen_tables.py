@@ -13,7 +13,7 @@ open('out/t_ranges.tex','w').write(s+'\\bottomrule\\end{tabular}')
 ms=['GBR','XGB','LGBM','CatBoost','RF','HGB','MLP']; s='\\begin{tabular}{lcccc}\\toprule Model & \\multicolumn{2}{c}{Raw 7 inputs} & \\multicolumn{2}{c}{17 features}\\\\ & $R^2$ & RMSE & $R^2$ & RMSE\\\\\\midrule\n'
 for m in ms:
     r=[]
-    for fs in ['raw','full14']:
+    for fs in ['raw','full17']:
         d=F[(F.model==m)&(F.fset==fs)]; r+= [f'{d.r2.mean():.3f}$\\pm${d.r2.std():.3f}',f'{d.rmse.mean():.3f}']
     s+=f'{m} & '+' & '.join(r)+'\\\\\n'
 s+='\\midrule\\multicolumn{5}{l}{Baselines (no machine learning)}\\\\\n'
@@ -23,26 +23,26 @@ open('out/t_fixed.tex','w').write(s+'\\bottomrule\\end{tabular}')
 # tuned
 s='\\begin{tabular}{lcccc}\\toprule Model & $R^2$ raw & $R^2$ 17 feat. & $\\Delta$RMSE & splits improved\\\\\\midrule\n'
 for m in ['GBR','XGB','LGBM','CatBoost','RF','HGB']:
-    a=T[(T.model==m)&(T.fset=='raw')].sort_values('rep');b=T[(T.model==m)&(T.fset=='full14')].sort_values('rep')
+    a=T[(T.model==m)&(T.fset=='raw')].sort_values('rep');b=T[(T.model==m)&(T.fset=='full17')].sort_values('rep')
     s+=f'{m} & {a.r2.mean():.3f}$\\pm${a.r2.std():.3f} & {b.r2.mean():.3f}$\\pm${b.r2.std():.3f} & {(b.rmse.values-a.rmse.values).mean():+.4f} & {(b.rmse.values<a.rmse.values).sum()}/10\\\\\n'
 open('out/t_tuned.tex','w').write(s+'\\bottomrule\\end{tabular}')
 # random vs grouped
 s='\\begin{tabular}{lccc}\\toprule Model / features & Random point-wise 80/20 & Grouped 23/5 (fixed HP) & LOGO (pooled)\\\\\\midrule\n'
-for m,fs in [('GBR','raw'),('GBR','full14'),('CatBoost','raw'),('MLP','raw'),('MLP','full14')]:
+for m,fs in [('GBR','raw'),('GBR','full17'),('CatBoost','raw'),('MLP','raw'),('MLP','full17')]:
     a=Rn[(Rn.model==m)&(Rn.fset==fs)].r2; b=F[(F.model==m)&(F.fset==fs)].r2; l=L[(L.model==m)&(L.fset==fs)].pooled_r2.values[0]
     s+=f'{m} / {"raw" if fs=="raw" else "17 feat."} & {a.mean():.3f}$\\pm${a.std():.3f} & {b.mean():.3f}$\\pm${b.std():.3f} & {l:.3f}\\\\\n'
 open('out/t_gap.tex','w').write(s+'\\bottomrule\\end{tabular}')
 # LOGO table
 s='\\begin{tabular}{llcccccc}\\toprule Model & Features & Pooled $R^2$ & Pooled RMSE & Macro RMS RMSE & Weighted mean $R^2_g$ & Median $R^2_g$ & $R^2_g\\le0$\\\\\\midrule\n'
 for m in ms:
-    for fs in ['raw','full14']:
+    for fs in ['raw','full17']:
         d=L[(L.model==m)&(L.fset==fs)].iloc[0]; s+=f'{m} & {"raw" if fs=="raw" else "17"} & {d.pooled_r2:.3f} & {d.pooled_rmse:.3f} & {np.sqrt((PG[(PG.model==m)&(PG.fset==fs)].rmse**2).mean()):.3f} & {d.r2_w:.2f}$\\pm${d.r2_sd:.2f} & {d.r2_med:.2f} & {int(d.n_fail)}\\\\\n'
 open('out/t_logo.tex','w').write(s+'\\bottomrule\\end{tabular}')
 # Re bands
 A=pd.read_csv('re_bands.csv'); B=pd.read_csv('leave_Re_band_out.csv')
 s='\\begin{tabular}{lcccccc}\\toprule Band & Re range & $n$ & Geom. & Cond. & LOGO RMSE & Leave-band-out $R^2$ (17 feat.)\\\\\\midrule\n'
 for _,r in A.iterrows():
-    s+=f'{r.band} & {r.Re_lo:.2g}--{r.Re_hi:.2g} & {int(r.n)} & {int(r.n_geom)} & {int(r.n_cond)} & {r.rmse:.3f} & {B[(B.band==r.band)&(B.fset=="full14")].r2.values[0]:.2f}\\\\\n'
+    s+=f'{r.band} & {r.Re_lo:.2g}--{r.Re_hi:.2g} & {int(r.n)} & {int(r.n_geom)} & {int(r.n_cond)} & {r.rmse:.3f} & {B[(B.band==r.band)&(B.fset=="full17")].r2.values[0]:.2f}\\\\\n'
 open('out/t_re.tex','w').write(s+'\\bottomrule\\end{tabular}')
 # Stk50
 reg=json.load(open('stk50_reg.json')); nm={'pooled':'Pooled, Re only','geom_covariates':'Pooled + $D_e/D$, $ab$, $\\rho_p/\\rho_g$','fixed_effects':'Geometry fixed effects'}
@@ -52,14 +52,14 @@ open('out/t_stk.tex','w').write(s+'\\bottomrule\\end{tabular}')
 # geometry appendix
 g=df.groupby('gid').agg(De=('De','first'),a=('a','first'),b=('b','first'),n=('eta','size'),Remin=('Re','min'),Remax=('Re','max'),rrmin=('rr','min'),rrmax=('rr','max'))
 s='{\\scriptsize\\begin{longtable}{rrrrrrrrr}\\toprule ID & $D_e/D$ & $a/D$ & $b/D$ & $n$ & Re range & $\\rho_p/\\rho_g$ & LOGO RMSE & $d_{Mahal}$\\\\\\midrule\n'
-ref=PG[(PG.fset=='full14')&(PG.model=='GBR')].set_index('gid')
+ref=PG[(PG.fset=='full17')&(PG.model=='GBR')].set_index('gid')
 for i,r in g.iterrows():
     s+=f'G{i} & {r.De:.3f} & {r.a:.3f} & {r.b:.3f} & {int(r.n)} & {r.Remin:.2g}--{r.Remax:.2g} & {r.rrmin:.0f}--{r.rrmax:.0f} & {ref.loc[i,"rmse"]:.3f} & {MD.loc[i,"d_mahal"]:.2f}\\\\\n'
 open('out/t_geom.tex','w').write(s+'\\bottomrule\\end{longtable}}')
 print(open('out/t_gap.tex').read())
 
 # ablation table (LOGO pooled RMSE / R2 per configuration)
-cfg=[('raw','Raw (7)'),('raw+log','Raw + logs (11)'),('raw+pivc','Raw + $\\Pi_{VC}$ (8)'),('raw+sep+geo','Raw + separation/geometry terms (12)'),('full14','All features (17)')]
+cfg=[('raw','Raw (7)'),('raw+log','Raw + logs (11)'),('raw+pivc','Raw + $\\Pi_{VC}$ (8)'),('raw+sep+geo','Raw + separation/geometry terms (12)'),('full17','All features (17)')]
 mm=['GBR','XGB','LGBM','CatBoost','RF','HGB']
 t='\\begin{tabular}{l'+'c'*len(mm)+'}\\toprule Configuration (no. of inputs) & '+' & '.join(mm)+'\\\\\\midrule\n'
 for k,lab in cfg:

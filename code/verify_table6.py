@@ -15,7 +15,7 @@ print(f"  {'Model':<10} {'feat':>5} {'pooled_R2':>10} {'pooled_RMSE':>12} {'macr
 print("-" * 65)
 
 for mn in ['GBR','XGB','LGBM','CatBoost','RF','HGB','MLP']:
-    for fs in ['raw','full14']:
+    for fs in ['raw','full17']:
         sub = PG[(PG.fset==fs) & (PG.model==mn)].set_index('gid').loc[gl]
         macro = np.sqrt(np.mean(sub.rmse**2))
         arith = sub.rmse.mean()

@@ -8,16 +8,16 @@ S=pd.read_csv('stk50_table.csv'); reg=json.load(open('stk50_reg.json'))
 F=pd.read_csv('splits_fixed.csv'); M=F[F.fset!='-'].groupby(['model','fset']).r2.agg(['mean','std']).unstack()
 ms=['GBR','XGB','LGBM','CatBoost','RF','HGB','MLP']; x=np.arange(len(ms)); w=.38
 fig,ax=plt.subplots(1,2,figsize=(7.2,2.9))
-for k,(fs,lab) in enumerate([('raw','7 raw inputs'),('full14','17 features (with $\\Pi_{VC}$)')]):
+for k,(fs,lab) in enumerate([('raw','7 raw inputs'),('full17','17 features')]):
     ax[0].bar(x+(k-.5)*w,[M.loc[m,('mean',fs)] for m in ms],w,yerr=[M.loc[m,('std',fs)] for m in ms],capsize=2,label=lab)
-ax[0].set_xticks(x);ax[0].set_xticklabels(ms,rotation=30);ax[0].set_ylim(.6,1);ax[0].set_ylabel('$R^2$ (grouped 23/5 splits)');ax[0].legend(fontsize=7);ax[0].set_title('(a) Repeated grouped hold-out (20 splits)')
-L=pd.read_csv('logo_summary.csv'); 
-for k,(fs,lab) in enumerate([('raw','7 raw inputs'),('full14','17 features')]):
+ax[0].set_xticks(x);ax[0].set_xticklabels(ms,rotation=30);ax[0].set_ylim(.4,1);ax[0].set_ylabel('$R^2$ (grouped 23/5 splits)');ax[0].legend(fontsize=7);ax[0].set_title('(a) Repeated grouped hold-out (20 splits)')
+L=pd.read_csv('logo_summary.csv')
+for k,(fs,lab) in enumerate([('raw','7 raw inputs'),('full17','17 features')]):
     ax[1].bar(x+(k-.5)*w,[L[(L.fset==fs)&(L.model==m)].pooled_rmse.values[0] for m in ms],w,label=lab)
 ax[1].set_xticks(x);ax[1].set_xticklabels(ms,rotation=30);ax[1].set_ylabel('pooled LOGO RMSE');ax[1].set_title('(b) Leave-one-geometry-out');ax[1].legend(fontsize=7)
 plt.tight_layout();plt.savefig('figs/fig_ablation.png');plt.close()
 # Fig B: LOGO parity + per geometry
-R=P[(P.fset=='full14')&(P.model=='GBR')]
+R=P[(P.fset=='full17')&(P.model=='GBR')]
 fig,ax=plt.subplots(1,3,figsize=(7.4,2.6))
 ax[0].scatter(R.y,R.pred,s=4,alpha=.5);ax[0].plot([0,1],[0,1],'k--',lw=.8);ax[0].set_xlabel('measured $\\eta$');ax[0].set_ylabel('LOGO prediction');ax[0].set_title('(a) Out-of-geometry parity')
 MDs=MD.sort_values('rmse'); ax[1].barh(range(28),MDs.rmse,color=['tab:red' if v else 'tab:blue' for v in MDs.flag]);ax[1].set_yticks(range(28));ax[1].set_yticklabels([f'G{g}' for g in MDs.index],fontsize=5);ax[1].set_xlabel('LOGO RMSE');ax[1].set_title('(b) Per geometry (red: flagged)')

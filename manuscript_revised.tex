@@ -28,7 +28,16 @@ validation, physics-inspired feature ablation and uncertainty assessment}
 \maketitle
 
 % =====================================================================
-%  NOMENCLATURE
+%  ABSTRACT
+% =====================================================================
+\begin{abstract}
+Machine-learning models of cyclone collection efficiency are nearly always validated on random point-wise splits, which distribute data points belonging to the same physical cyclone across both training and test sets. This practice inflates apparent accuracy because the model is evaluated on interpolation along a grade-efficiency curve rather than on genuine extrapolation to an unseen design. We revisit this question using the publicly available 977-point, 28-geometry efficiency database of Bregolin et al.\ (Waste 2, 2024). Three questions guide the work: (i) how much accuracy is actually lost when whole geometries are withheld from training; (ii) whether physics-inspired input features---a vortical-capture group $\PiVC$, a separation number, and an inlet-geometry ratio---improve prediction in a controlled ablation; and (iii) whether the extrapolation and uncertainty diagnostics that one might recommend to practitioners are themselves validated. Gradient-boosting models attain $R^2\approx0.95$ under random splitting but only $R^2\approx0.73$--0.75 (RMSE $\approx 0.17$) when whole geometries are withheld, whether by 20 repeated 23/5 geometry-grouped splits or by leave-one-geometry-out (LOGO) validation; semi-empirical Lapple and Stokes-only baselines give $R^2\approx0.29$ and 0.44 respectively. Six tree-based learners and one neural network are compared under identical protocols. The 17 engineered features yield small, consistent gains under tuned hyperparameters (RMSE reduction 0.001--0.011, at least 7 of 10 splits improved) but no statistically significant gain under LOGO: the paired bootstrap 95\% interval of the macro-RMS difference $\Delta\text{RMSE}_{\text{macro,RMS}}$ contains zero for every model. A large gain is observed only for the neural network under grouped splits with fixed hyperparameters ($R^2$ 0.51$\to$0.69), but this gain does \emph{not} transfer to LOGO ($R^2_{\text{LOGO}}$: 0.598$\to$0.594). The constants of $\PiVC$, calibrated strictly inside training folds, are poorly identified; a freely fitted Reynolds exponent converges to $m\approx+0.43$, not the assumed $-0.5$, reflecting the intrinsic dependence of Stk on Re. A Mahalanobis distance in geometry space does not significantly predict LOGO error (Spearman $\rho=0.13$, $p=0.50$). A heteroscedastic interval model under-covers at the 95\% level (90\% at $\pm2\sigma$ versus 95.4\% nominal); a geometry-calibrated conformal rescaling achieves 92\% pooled and 95\% mean per-geometry coverage but only 64.5\% for the worst geometry---so this represents empirical mean coverage within the available database, not a formal guarantee for an arbitrary unseen geometry. For the cut diameter, the Reynolds exponent is $-0.46$ (pooled), $-0.55$ (geometry-adjusted) and $-0.52$ (fixed effects, wide interval), but Re and geometry are 98.7\% collinear in this database, so the exponent cannot be disentangled from geometry effects. Taken together, these results offer a conservative, reproducible performance baseline and an honest account of what this database can and cannot support.
+\end{abstract}
+
+\noindent\textbf{Keywords:} cyclone separator; collection efficiency; gradient boosting; physics-inspired features; geometry-grouped validation; uncertainty quantification
+
+% =====================================================================
+%  NOMENCLATURE (after abstract/keywords)
 % =====================================================================
 \begin{table}[!ht]\centering
 \caption{Nomenclature and abbreviations.}\label{tab:nomenclature}
@@ -41,28 +50,29 @@ Symbol & Definition & Symbol & Definition \\
 \midrule
 $D$ & Cyclone body diameter [m] & $\eta$ & Collection efficiency [--] \\
 $D_e$ & Vortex finder diameter [m] & $\alpha$ & Reynolds exponent of Stk$_{50}$ [--] \\
-$D_p$ & Particle diameter [m] & $\beta$ & Thermal expansion coefficient [1/K] \\
-$a$ & Inlet height [m] & $\delta$ & Boundary-layer thickness [--] \\
-$b$ & Inlet width [m] & $\rho_p$ & Particle density [kg/m$^3$] \\
-$N$ & Number of effective turns [--] & $\rho_g$ & Gas density [kg/m$^3$] \\
-$\Rey$ & Reynolds number, $v_\text{in}D/\nu$ [--] & $\nu$ & Kinematic viscosity [m$^2$/s] \\
-$\Stk$ & Stokes number, $\tau_p v_\text{in}/D$ [--] & $\sigma$ & Standard deviation of residuals [--] \\
-$\Stk_{50}$ & Stokes number at $\eta=0.5$ [--] & \multicolumn{2}{l}{\textbf{Subscripts}} \\
-$v_\theta$ & Tangential velocity [m/s] & $g$ & Per-geometry index \\
-$v_r$ & Radial velocity [m/s] & $\text{ref}$ & Reference value \\
-$\PiVC$ & Vortical-capture group [--] & $50$ & At 50\% efficiency \\
+$D_p$ & Particle diameter [m] & $\rho_p$ & Particle density [kg/m$^3$] \\
+$a$ & Inlet height [m] & $\rho_g$ & Gas density [kg/m$^3$] \\
+$b$ & Inlet width [m] & $\nu$ & Kinematic viscosity [m$^2$/s] \\
+$N$ & Number of effective turns [--] & $\sigma$ & Standard deviation of residuals [--] \\
+$\Rey$ & Reynolds number, $v_\text{in}D/\nu$ [--] & $\tau_p$ & Particle relaxation time [s] \\
+$\Stk$ & Stokes number, $\tau_p v_\text{in}/D$ [--] & \multicolumn{2}{l}{\textbf{Subscripts}} \\
+$\Stk_{50}$ & Stokes number at $\eta=0.5$ [--] & $g$ & Per-geometry index \\
+$v_\theta$ & Tangential velocity [m/s] & $\text{ref}$ & Reference value \\
+$v_r$ & Radial velocity [m/s] & $50$ & At 50\% efficiency \\
+$\PiVC$ & Vortical-capture group [--] & & \\
+$A_\Pi$ & Calibration constant of $\PiVC$ [--] & & \\
+$B_\Pi$ & Damping constant of $\PiVC$ [--] & & \\
+$C_\Pi$ & Density-ratio exponent of $\PiVC$ [--] & & \\
+$m_\Pi$ & Reynolds exponent of $\PiVC$ [--] & & \\
 $G$ & Number of geometries [--] & & \\
 \midrule
 \multicolumn{4}{l}{\textbf{Abbreviations}} \\
 \midrule
-LBM & Lattice Boltzmann Method & LOGO & Leave-One-Geometry-Out \\
-MRT & Multiple Relaxation Time & L2GO & Leave-Two-Geometries-Out \\
-DDF & Double Distribution Function & BPNN & Back-Propagation Neural Network \\
-GDR & Gradient Boosting Regressor & MLP & Multi-Layer Perceptron \\
-XGB & Extreme Gradient Boosting & RF & Random Forest \\
-LGBM & Light Gradient Boosting Machine & HGB & Histogram Gradient Boosting \\
-Ra & Rayleigh number & Pr & Prandtl number \\
-Nu & Nusselt number & CV & Coefficient of Variation \\
+LOGO & Leave-One-Geometry-Out & BPNN & Back-Propagation Neural Network \\
+L2GO & Leave-Two-Geometries-Out & MLP & Multi-Layer Perceptron \\
+GBR & Gradient Boosting Regressor & RF & Random Forest \\
+XGB & Extreme Gradient Boosting & HGB & Histogram Gradient Boosting \\
+LGBM & Light Gradient Boosting Machine & CV & Coefficient of Variation \\
 RMSE & Root Mean Square Error & MAE & Mean Absolute Error \\
 AUC & Area Under the (ROC) Curve & CI & Confidence Interval \\
 PCHIP & Piecewise Cubic Hermite Interpolation & OOF & Out-of-Fold \\
@@ -71,20 +81,11 @@ PCHIP & Piecewise Cubic Hermite Interpolation & OOF & Out-of-Fold \\
 \end{table}
 
 % =====================================================================
-%  ABSTRACT
-% =====================================================================
-\begin{abstract}
-Machine-learning models of cyclone collection efficiency are nearly always validated on random point-wise splits, which distribute data points belonging to the same physical cyclone across both training and test sets. This practice inflates apparent accuracy because the model is evaluated on interpolation along a grade-efficiency curve rather than on genuine extrapolation to an unseen design. We revisit this question using the publicly available 977-point, 28-geometry efficiency database of Bregolin et al.\ (Waste 2, 2024). Three questions guide the work: (i) how much accuracy is actually lost when whole geometries are withheld from training; (ii) whether physics-inspired input features---a vortical-capture group $\PiVC$, a separation number, and an inlet-geometry ratio---improve prediction in a controlled ablation; and (iii) whether the extrapolation and uncertainty diagnostics that one might recommend to practitioners are themselves validated. Gradient-boosting models attain $R^2\approx0.95$ under random splitting but only $R^2\approx0.73$--0.75 (RMSE $\approx 0.17$) when whole geometries are withheld, whether by 20 repeated 23/5 geometry-grouped splits or by leave-one-geometry-out (LOGO) validation; semi-empirical Lapple and Stokes-only baselines give $R^2\approx0.29$ and 0.44 respectively. Six tree-based learners and one neural network are compared under identical protocols. The 17 engineered features yield small, consistent gains under tuned hyperparameters (RMSE reduction 0.001--0.011, at least 7 of 10 splits improved) but no statistically significant gain under LOGO: the paired bootstrap 95\% interval of the macro-RMS difference $\Delta\text{RMSE}_{\text{macro,RMS}}$ contains zero for every model. A large gain is observed only for the neural network under grouped splits with fixed hyperparameters ($R^2$ 0.51$\to$0.69), but this gain does \emph{not} transfer to LOGO ($R^2_{\text{LOGO}}$: 0.598$\to$0.594). The constants of $\PiVC$, calibrated strictly inside training folds, are poorly identified; a freely fitted Reynolds exponent converges to $m\approx+0.43$, not the assumed $-0.5$, reflecting the intrinsic dependence of Stk on Re. A Mahalanobis distance in geometry space does not significantly predict LOGO error (Spearman $\rho=0.13$, $p=0.50$). A heteroscedastic interval model under-covers at the 95\% level (90\% at $\pm2\sigma$ versus 95.4\% nominal); a geometry-calibrated conformal rescaling achieves 92\% pooled and 95\% mean per-geometry coverage but only 64.5\% for the worst geometry---so it is an average guarantee, not a per-geometry one. For the cut diameter, the Reynolds exponent is $-0.46$ (pooled), $-0.55$ (geometry-adjusted) and $-0.52$ (fixed effects, wide interval), but Re and geometry are 98.7\% collinear in this database, so the exponent cannot be disentangled from geometry effects. Taken together, these results offer a conservative, reproducible performance baseline and an honest account of what this database can and cannot support.
-\end{abstract}
-
-\noindent\textbf{Keywords:} cyclone separator; collection efficiency; gradient boosting; physics-inspired features; geometry-grouped validation; uncertainty quantification
-
-% =====================================================================
 %  INTRODUCTION
 % =====================================================================
 \section{Introduction}
 
-Cyclone separators are among the most widely deployed gas--solid separation devices in industrial practice, owing to their simplicity, lack of moving parts, and tolerance to high-temperature and high-pressure environments \cite{hoffmann}. The collection efficiency of a given cyclone depends on a confluence of factors---particle inertia, gas flow regime, and the detailed geometry of the inlet, body, and cone---that semi-empirical models such as those of Lapple \cite{lapple}, Barth \cite{barth}, and Muschelknautz \cite{muschel} capture only to a limited degree \cite{hoffmann92,dirgo}. Over the past decade, machine-learning approaches trained on aggregated literature data have reported strikingly high accuracy \cite{bregolin,elsayed,zhao}, with coefficients of determination routinely exceeding 0.95. These numbers, however, are almost invariably obtained through random point-wise splitting of the dataset: a random subset of measurements is held out for testing, while the remainder is used for training. Because multiple measurements from the same physical cyclone---corresponding to different particle sizes or operating conditions---are distributed across both sets, the model is effectively asked to interpolate along an already-seen grade-efficiency curve rather than to predict the performance of a genuinely new design. The reported accuracy therefore measures something closer to curve fitting than to design generalization.
+Cyclone separators are among the most widely deployed gas--solid separation devices in industrial practice, owing to their simplicity, lack of moving parts, and tolerance to high-temperature and high-pressure environments \cite{hoffmann}. The collection efficiency of a given cyclone depends on a confluence of factors---particle inertia, gas flow regime, and the detailed geometry of the inlet, body, and cone---that semi-empirical models such as those of Lapple \cite{lapple}, Barth \cite{barth}, and Muschelknautz \cite{muschel} capture only to a limited degree \cite{hoffmann92,dirgo}. Machine-learning models have been investigated for cyclone collection-efficiency prediction \cite{bregolin}, often reporting coefficients of determination exceeding 0.95. Related studies have also examined the influence of inlet geometry on cyclone flow and performance using CFD \cite{elsayed}, as well as artificial-neural-network prediction of cyclone pressure-drop coefficients \cite{zhao}. These numbers, however, are almost invariably obtained through random point-wise splitting of the dataset: a random subset of measurements is held out for testing, while the remainder is used for training. Because multiple measurements from the same physical cyclone---corresponding to different particle sizes or operating conditions---are distributed across both sets, the model is effectively asked to interpolate along an already-seen grade-efficiency curve rather than to predict the performance of a genuinely new design. The reported accuracy therefore measures something closer to curve fitting than to design generalization.
 
 The distinction matters. A practitioner who consults a published model to estimate the efficiency of a proposed new cyclone geometry needs to know how the model will perform on \emph{unseen} designs, not on additional operating points of designs that were already in the training data. Yet very few studies in the cyclone or broader particulate-flow literature report geometry-level generalization or calibrated uncertainty estimates. The present paper is deliberately framed to fill this gap: it is a validation and ablation study, not a proposal for a new learning algorithm. The learner is a standard tree ensemble (or, for comparison, a back-propagation neural network of the type used by the original database authors); physics enters only through the construction of input features. We do not claim this to be ``physics-informed machine learning'' in the formal sense of Karniadakis et al.\ \cite{karniadakis}, where governing equations constrain the model architecture or loss function.
 
@@ -131,28 +132,28 @@ The starting point for feature engineering is the classical impaction argument. 
 \end{equation}
 which corrects Eq.~(1) of the first submission (the factor $\tau_p$ was previously omitted). Scaling this expression at a characteristic separation radius suggests that capture depends on the Stokes number and on a drag-related correction involving the Reynolds number. We therefore introduce the semi-empirical vortical-capture group
 \begin{equation}
-\PiVC = 1 - \exp\!\left[-\frac{a\,\Stk\,\Rey^{m}}{1 + b\,(\rho_p/\rho_g / 1000)^{c}}\right],
+\PiVC = 1 - \exp\!\left[-\frac{A_\Pi\,\Stk\,\Rey^{m_\Pi}}{1 + B_\Pi\,(\rho_p/\rho_g / 1000)^{C_\Pi}}\right],
 \label{eq:pivc}
 \end{equation}
-with a nominal exponent $m = -1/2$. The physical motivation for the $\Rey^{-1/2}$ factor is that the helical path length of a particle in the vortex grows roughly as $\sqrt{\Rey}$, so the effective residence time for impaction scales accordingly. We emphasize that Eq.~\eqref{eq:pivc} is not derived from first principles: the $\Rey^{-1/2}$ scaling is an assumption, and the constants $(a, b, c)$ are fitted to data. The density-ratio term in the denominator introduces a correction for particle loading effects on the drag, which would otherwise be absent from the Stokes number alone.
+with a nominal exponent $m_\Pi = -1/2$. This $\Rey^{-1/2}$ scaling is an exploratory scaling hypothesis, not derived from the equations presented in this study. The constants $(A_\Pi, B_\Pi, C_\Pi)$ are fitted to data, and a freely fitted Reynolds exponent converges to $m_\Pi \approx +0.43$ rather than $-0.5$, as discussed in Section~4.3. The density-ratio term in the denominator introduces an empirical correction to the drag-related term through the particle-to-gas density contrast, which would otherwise be absent from the Stokes number alone.
 
-The calibration of $(a, b, c)$ is performed by nonlinear least-squares minimization of the objective function
+The calibration of $(A_\Pi, B_\Pi, C_\Pi)$ is performed by nonlinear least-squares minimization of the objective function
 \begin{equation}
-J(a, b, c) = \sum_{i \in \mathcal{T}} \left[\eta_i - \PiVC{}_i(a, b, c)\right]^2,
+J(A_\Pi, B_\Pi, C_\Pi) = \sum_{i \in \mathcal{T}} \left[\eta_i - \PiVC{}_i(A_\Pi, B_\Pi, C_\Pi)\right]^2,
 \label{eq:objective}
 \end{equation}
-where $\mathcal{T}$ denotes the training set of the current fold. This objective operates on the raw efficiency $\eta$ (no weighting, no transformation); it is an unweighted nonlinear least-squares fit of $\PiVC$ to $\eta$. The optimization uses four starting values for $a$ ($10^2, 10^3, 10^4, 10^5$), with the solution of lowest cost retained. The bounds are:
+where $\mathcal{T}$ denotes the training set of the current fold. This objective operates on the raw efficiency $\eta$ (no weighting, no transformation); it is an unweighted nonlinear least-squares fit of $\PiVC$ to $\eta$. The optimization uses four starting values for $A_\Pi$ ($10^2, 10^3, 10^4, 10^5$), with the solution of lowest cost retained. The bounds are:
 \begin{equation}
-a \in [10^{-3},\, 10^9], \quad b \in [0,\, 50], \quad c \in [0.1,\, 6], \quad m \in [-1.5,\, 0.5] \text{ (when free)}.
+A_\Pi \in [10^{-3},\, 10^9], \quad B_\Pi \in [0,\, 50], \quad C_\Pi \in [0.1,\, 6], \quad m_\Pi \in [-1.5,\, 0.5] \text{ (when free)}.
 \end{equation}
 Solutions that reach a bound are retained and reported explicitly (Section~4.3).
 
-To prevent data leakage, $(a, b, c)$ are re-fitted on the training data of each fold only---never on the test fold. Whenever $\PiVC$ appears in the feature set during nested hyperparameter tuning, the constants are re-calibrated inside every inner training fold and applied to the inner validation fold. After hyperparameters are selected, the constants are recalibrated once on the full outer training set, and the outer test geometries are evaluated only once. This nested protocol ensures that the test data never influence the calibration.
+To prevent data leakage, $(A_\Pi, B_\Pi, C_\Pi)$ are re-fitted on the training data of each fold only---never on the test fold. Whenever $\PiVC$ appears in the feature set during nested hyperparameter tuning, the constants are re-calibrated inside every inner training fold and applied to the inner validation fold. After hyperparameters are selected, the constants are recalibrated once on the full outer training set, and the outer test geometries are evaluated only once. This nested protocol ensures that the test data never influence the calibration.
 
 Beyond $\PiVC$, the remaining engineered features are: $\Stk/\sqrt{\Rey}$ (a separation number), its logarithm $\ln(\Stk/\sqrt{\Rey})$, the inlet-geometry ratio $ab/D_e^2$, the interaction $\Stk \cdot ab/D_e^2$, the product $\Rey\,D_e/D$, and logarithmic transforms of Re, Stk, $D_p/D$, and $\rho_p/\rho_g$. In total this gives 7 raw inputs + 4 logarithmic transforms + 6 derived features = 17 inputs (the first submission incorrectly stated 14). Values that are non-positive before logarithmic transformation are handled by adding a small epsilon ($10^{-12}$) to avoid numerical issues; no clipping or normalization is applied to the raw inputs, as tree-based models are invariant to monotone transformations. The complete list, with computational names, mathematical definitions, and numerical treatment, is given in Table~\ref{tab:featurelist}.
 
 \begin{table}[!ht]\centering
-\caption{Complete feature list (17 inputs). ``Clip'' indicates whether output predictions are clipped to $[0,1]$.}
+\caption{Complete feature list (17 inputs). All predictions are clipped to $[0,1]$.}
 \label{tab:featurelist}\small
 \begin{tabular}{llll}
 \toprule
@@ -195,7 +196,7 @@ Six tree-based learners and one neural network are compared under a single, unif
 
 Two hyperparameter protocols are used for all boosters and forests:
 \begin{itemize}[noitemsep]
-\item \textbf{Fixed}: 400 trees (or 300 for RF/HGB), maximum depth 4, learning rate 0.05, subsample 0.85---identical for raw and 17-feature inputs. This protocol ensures that any performance difference is attributable to the feature set, not to hyperparameter tuning.
+\item \textbf{Fixed}: the same hyperparameters are used for the raw and 17-feature inputs of a given model, but the exact values can differ between model families. For the gradient-boosting variants (GBR, XGB, LGBM) and the histogram booster (HGB) we use 400 trees, maximum depth 4, learning rate 0.05 and subsample 0.85; CatBoost uses the same settings without row subsampling; the random forest uses 300 trees with \texttt{min\_samples\_leaf}=2 and no subsampling; and the MLP uses three hidden layers of 15 ReLU units each, Adam with learning rate 0.008, batch size 5 and 100 epochs. This protocol ensures that any performance difference is attributable to the feature set, not to hyperparameter tuning.
 \item \textbf{Tuned}: for each outer split, a four-configuration search (depth 3--5, 200--500 trees, learning rate 0.03--0.1; leaf size and feature fraction for RF), scored by 3-fold geometry-grouped inner cross-validation on the training geometries only. The nested protocol operates as follows:
 \end{itemize}
 
@@ -205,13 +206,13 @@ Two hyperparameter protocols are used for all boosters and forests:
 &\quad\downarrow \\
 &\text{Inner training folds (3-fold GroupKFold)} \\
 &\quad\downarrow \\
-&\text{Calibration of } (a, b, c) \text{ inside each inner training fold} \\
+&\text{Calibration of } (A_\Pi, B_\Pi, C_\Pi) \text{ inside each inner training fold} \\
 &\quad\downarrow \\
 &\text{Transformation applied to inner validation fold} \\
 &\quad\downarrow \\
 &\text{Selection of hyperparameters (lowest inner MSE)} \\
 &\quad\downarrow \\
-&\text{Recalibration of } (a, b, c) \text{ on full outer training set} \\
+&\text{Recalibration of } (A_\Pi, B_\Pi, C_\Pi) \text{ on full outer training set} \\
 &\quad\downarrow \\
 &\text{Evaluation on outer test geometries (single pass)}
 \end{aligned}
@@ -240,7 +241,7 @@ Two baselines are included to contextualize the machine-learning results. The fi
 \begin{equation}
 \eta = \frac{1}{1 + (\Stk_{50}/\Stk)^2}, \quad \text{with } \Stk_{50} = \frac{b/D}{4\pi N},
 \end{equation}
-where $N$ is the number of effective turns (taken as $N=5$ or fitted on the training geometries). The second is a Stokes-only fit, $\eta = 1 - \exp(-A\,\Stk^{k})$, where $A$ and $k$ are fitted on training data. These baselines use only quantities available in the database and provide a lower bound on what can be achieved without any geometry-level information.
+where $N$ is the number of effective turns (taken as $N=5$ or fitted on the training geometries). The second is a Stokes-only fit, $\eta = 1 - \exp(-A\,\Stk^{k})$, where $A$ and $k$ are fitted on training data. These two semi-empirical models provide reference performance levels using substantially fewer inputs than the machine-learning models. The Stokes-only fit relies on Stk alone, whereas Lapple's model additionally incorporates the inlet-width ratio $b/D$ and the effective number of turns $N$.
 
 \subsection{Extrapolation indicator and prediction intervals}
 For each geometry we compute the Mahalanobis distance of $(D_e/D, a/D, b/D)$ from the centroid and covariance of the 27 other geometries (each geometry counted once). The flagging threshold is the 95th percentile of the distances of those 27 geometries. We test the association between this distance and LOGO error by Spearman correlation (with permutation $p$-value) and by the area under the ROC curve (AUC) for identifying the worst-quartile geometries.
@@ -261,7 +262,7 @@ Table~\ref{tab:gap} presents the central finding of this study. Under random poi
 \begin{table}[!ht]\centering\caption{Accuracy under three validation schemes.}\label{tab:gap}\input{t_gap.tex}\end{table}
 \begin{table}[!ht]\centering\caption{20 repeated geometry-grouped 23/5 splits, fixed hyperparameters (mean$\pm$sd of $R^2$; mean RMSE).}\label{tab:fixed}\input{t_fixed.tex}\end{table}
 
-All tree ensembles are statistically indistinguishable from one another under grouped validation (differences $<0.03$ against a split-to-split standard deviation exceeding 0.10), so we do not claim a best algorithm. CatBoost, which appeared highest on a single split in the first submission, is not highest here. All machine-learning models clearly outperform the semi-empirical baselines, which supports the use of multivariable models even though the absolute accuracy for unseen geometries remains moderate.
+All tree ensembles exhibit similar average performance under grouped validation (differences $<0.03$ against a split-to-split standard deviation exceeding 0.10), so no clear ranking can be established on this database. CatBoost, which appeared highest on a single split in the first submission, is not highest here. All machine-learning models clearly outperform the semi-empirical baselines, which supports the use of multivariable models even though the absolute accuracy for unseen geometries remains moderate.
 
 \subsection{Ablation of the physics-inspired features}
 \label{sec:ablation}
@@ -277,16 +278,33 @@ Under LOGO (Table~\ref{tab:abl}), the picture is more nuanced. Table~\ref{tab:ab
 \item The largest gains, up to 0.02--0.03 in $R^2$ for XGB, LightGBM, CatBoost, and RF, come from the separation/geometry terms ($\Stk/\sqrt{\Rey}$, $ab/D_e^2$, and the two interaction terms).
 \end{enumerate}
 
-\begin{table}[!ht]\centering\caption{LOGO ablation by feature configuration: pooled $R^2$ / pooled RMSE (fixed hyperparameters, constants fitted within folds).}\label{tab:abl}\input{t_abl.tex}\end{table}
+\begin{table}[!ht]\centering\caption{LOGO ablation by feature configuration: pooled $R^2$ / pooled RMSE (fixed hyperparameters, constants fitted within folds).}\label{tab:abl}\footnotesize
+\begin{tabular}{lccc}\toprule Configuration (no. of inputs) & GBR & XGB & LGBM \\ \midrule
+Raw (7) & 0.731 / 0.176 & 0.716 / 0.181 & 0.737 / 0.174 \\
+Raw + logs (11) & 0.727 / 0.177 & 0.716 / 0.181 & 0.737 / 0.174 \\
+Raw + $\Pi_{VC}$ (8) & 0.729 / 0.176 & 0.715 / 0.181 & 0.735 / 0.174 \\
+Raw + separation/geometry terms (12) & 0.730 / 0.176 & 0.735 / 0.174 & 0.750 / 0.169 \\
+All features (17) & 0.740 / 0.173 & 0.739 / 0.173 & 0.746 / 0.171 \\
+\bottomrule\end{tabular}
+\vspace{8pt}
+
+\begin{tabular}{lccc}\toprule Configuration (no. of inputs) & CatBoost & RF & HGB \\ \midrule
+Raw (7) & 0.696 / 0.187 & 0.719 / 0.180 & 0.731 / 0.176 \\
+Raw + logs (11) & 0.692 / 0.188 & 0.716 / 0.180 & 0.731 / 0.176 \\
+Raw + $\Pi_{VC}$ (8) & 0.704 / 0.184 & 0.713 / 0.182 & 0.741 / 0.172 \\
+Raw + separation/geometry terms (12) & 0.724 / 0.178 & 0.738 / 0.174 & 0.732 / 0.175 \\
+All features (17) & 0.721 / 0.179 & 0.740 / 0.173 & 0.731 / 0.176 \\
+\bottomrule\end{tabular}
+\end{table}
 
 The paired per-geometry RMSE differences under LOGO have bootstrap intervals that include zero for every model (e.g.\ GBR: $+0.003$, 95\% interval $[-0.013, 0.020]$). The gains seen in Table~\ref{tab:tuned} under tuned grouped splits are therefore not confirmed as statistically significant under the more demanding LOGO protocol. This is an important distinction: the grouped-split gains concern models evaluated on randomly selected subsets of geometries, while LOGO evaluates on every geometry in turn. The correct conclusion is that the engineered features provide modest improvements under repeated geometry-grouped validation, but no statistically significant improvement in leave-one-geometry-out prediction.
 
-The benefit observed for the neural network is consistent with improved input scaling and conditioning rather than with the vortical-capture group itself: tree-based models, which are invariant to monotone transformations, do not benefit from $\PiVC$ in the same way. We did not run the network on every configuration, so this attribution remains a hypothesis.
+All MLP experiments use a \texttt{StandardScaler} fitted exclusively on the training data within each fold, implemented through a scikit-learn pipeline. Under LOGO, the standardized MLP yields pooled $R^2$ values of 0.598 and 0.594 for the raw and 17-feature configurations, respectively, with corresponding pooled RMSE values of 0.215 and 0.216. The macro-RMS RMSE decreases from 0.235 to 0.198, but the paired bootstrap 95\% confidence interval for this difference, $[-0.080, +0.011]$, includes zero. Thus, the point estimate suggests a possible improvement in average per-geometry error, but no statistically significant LOGO improvement is established. The larger MLP gain reported in Table~\ref{tab:fixed} ($R^2$: 0.51 to 0.69) pertains to repeated geometry-grouped splits with fixed hyperparameters and does not transfer to LOGO.
 
 \subsection{Calibration of $\PiVC$}
 \label{sec:calibration}
 
-When $(a, b, c)$ are calibrated within training folds (objective function: Eq.~\eqref{eq:objective}), the constants are poorly identified. The damping term collapses ($b \approx 10^{-10}$, $c$ at its lower bound 0.1 in every fold) and $a \approx 10^{5}$, so the values $a=0.70$, $b=0.30$, $c=2.0$ reported in the first submission are not reproducible by out-of-fold fitting. When the Reynolds exponent $m$ is also fitted, it converges to $m \approx +0.43$ (range 0.40--0.47 across 28 folds), not $-0.5$. This reflects the fact that Stk already contains a factor of Re through its definition, so freeing $m$ allows the optimizer to partially compensate for collinearity rather than recovering an independent physical scaling. Freeing $m$ does not improve LOGO accuracy (pooled $R^2$ 0.728 versus 0.740 with fixed $m=-0.5$). We accordingly describe $\PiVC$ as a data-fitted dimensionless group, not a physically validated descriptor.
+When $(A_\Pi, B_\Pi, C_\Pi)$ are calibrated within training folds (objective function: Eq.~\eqref{eq:objective}), the constants are poorly identified. The damping term collapses ($B_\Pi \approx 10^{-10}$, $C_\Pi$ at its lower bound 0.1 in every fold) and $A_\Pi \approx 10^{5}$, so the values $A_\Pi=0.70$, $B_\Pi=0.30$, $C_\Pi=2.0$ reported in the first submission are not reproducible by out-of-fold fitting. When the Reynolds exponent $m_\Pi$ is also fitted, it converges to $m_\Pi \approx +0.43$ (range 0.40--0.47 across 28 folds), not $-0.5$. This reflects the fact that Stk already contains a factor of Re through its definition, so freeing $m_\Pi$ allows the optimizer to partially compensate for collinearity rather than recovering an independent physical scaling. Freeing $m_\Pi$ does not improve LOGO accuracy (pooled $R^2$ 0.728 versus 0.740 with fixed $m_\Pi=-0.5$). We accordingly describe $\PiVC$ as a data-fitted dimensionless group, not a physically validated descriptor.
 
 \subsection{Generalization to unseen geometries}
 \label{sec:logo}
@@ -295,7 +313,7 @@ Table~\ref{tab:logo} reports the full LOGO results. For GBR with 17 features, po
 
 Pooled RMSE weights geometries by their number of points, so a geometry with 161 points contributes far more than one with 7. Since the practical goal is prediction for a \emph{new} geometry regardless of how many points it might have, Table~\ref{tab:logo} also reports the macro-RMS of the 28 per-geometry RMSE values ($\sqrt{G^{-1}\sum_g \text{RMSE}_g^2}$). For GBR with 17 features, this macro-RMS is 0.180, compared to 0.173 pooled and 0.165 arithmetic mean. The macro-RMS is consistently slightly higher than the pooled value because the smaller geometries---which receive equal weight in the macro-RMS---tend to have somewhat higher individual RMSE.
 
-\begin{table}[!ht]\centering\caption{LOGO validation (28 folds), all models. Pooled $R^2$, pooled RMSE, macro-RMS RMSE, weighted mean per-geometry $R^2_g$, median $R^2_g$, and number of geometries with $R^2_g \le 0$.}\label{tab:logo}\input{t_logo.tex}\end{table}
+\begin{table}[!ht]\centering\caption{LOGO validation (28 folds), all models. Pooled $R^2$, pooled RMSE, macro-RMS RMSE, weighted mean per-geometry $R^2_g$, median $R^2_g$, and number of geometries with $R^2_g \le 0$.}\label{tab:logo}\footnotesize\setlength{\tabcolsep}{3.5pt}\input{t_logo.tex}\end{table}
 
 \begin{figure}[!ht]\centering\includegraphics[width=\textwidth]{fig_logo.png}\caption{LOGO results for GBR (17 features): (a) out-of-geometry parity plot, (b) RMSE per geometry with red markers indicating Mahalanobis-flagged designs, (c) RMSE versus leave-one-out Mahalanobis distance.}\label{fig:logo}\end{figure}
 
@@ -339,13 +357,13 @@ With distances computed against the 27 remaining geometries in each LOGO fold, 6
 \subsection{Prediction intervals}
 Residuals are heteroscedastic, as confirmed by a Breusch--Pagan test on LOGO residuals against $\hat\eta$ (LM $= 35.4$, $p = 3\times10^{-9}$). The residual standard deviation peaks near $\hat\eta \approx 0.5$ ($\sigma \approx 0.22$; quadratic coefficients $c_2 = -0.54$, $c_1 = 0.49$, $c_0 = 0.11$). Under LOGO, the empirical coverage of $\hat\eta \pm k\sigma_\eta$ is 67.0\%, 90.1\%, and 97.3\% for $k = 1, 2, 3$ respectively (nominal: 68.3\%, 95.4\%, 99.7\%). The model is therefore adequate near $1\sigma$ and under-covers at the 95\% level. The 95\% quantile of $|\text{res}|/\sigma$ is 2.55, meaning the 95\% interval should use $\pm 2.55\sigma$ ($\approx 1.3\times$ the Gaussian 1.96). This inflation factor is essentially the same for flagged (2.31) and unflagged geometries (2.55), so the earlier recommendation to widen intervals ``by a factor of 2 or higher'' outside a Mahalanobis threshold is unsupported and is withdrawn.
 
-A conformal rescaling with the quantile $q$ computed on the out-of-fold residuals of the other 27 geometries (mean $q = 2.29$) yields pooled coverage of 92.4\% and mean per-geometry coverage of 95.0\% for a 95\% target, with a minimum of 64.5\% for the worst geometry. The 95\% figure is thus an empirical average over the 28 available geometries, not a guarantee for a new arbitrary geometry; it depends on the new geometry resembling the population used for calibration.
+A conformal rescaling with the quantile $q$ computed on the out-of-fold residuals of the other 27 geometries (mean $q = 2.29$) yields pooled coverage of 92.4\% and mean per-geometry coverage of 95.0\% for a 95\% target, with a minimum of 64.5\% for the worst geometry. The 95\% figure represents empirical mean per-geometry coverage within the available database, rather than a formal guarantee for an arbitrary unseen geometry; it depends on the new geometry resembling the population used for calibration.
 
 \subsection{Cut diameter}
 $\Stk_{50}$ was extracted for all 73 conditions (median bootstrap coefficient of variation 3.8\%, much smaller than the 12.4\% reported previously, because here each condition has its own grade-efficiency curve rather than one curve per geometry). Table~\ref{tab:stk} and Fig.~\ref{fig:stk} give the Reynolds exponent. The pooled value ($-0.46$) and the geometry-adjusted values ($-0.55$ and $-0.52$) are all compatible with $-0.5$, but the intervals are wide (up to $\pm 0.2$). The fixed-effects estimate rests on only 17 geometries that have more than one Reynolds number (median max/min Re ratio 1.7), and the unweighted fixed-effects estimate is $-0.66$. Because $\ln\Rey$ is 98.7\% explained by the geometry mean, the pooled slope mostly reflects between-geometry differences rather than a within-geometry physical scaling. We therefore report the exponent as consistent with---but not a validation of---the Barth-type scaling $\Stk_{50} \propto \Rey^{-1/2}$, and we make no physical interpretation of the 7.9\% departure. All uncertainties are conditional on the assumed noise $\sigma_\epsilon = 0.025$ and describe the sensitivity of the extraction procedure, not measured experimental error. Table~\ref{tab:sens} shows that the median coefficient of variation scales from 1.5\% to 8.2\% for $\sigma_\epsilon = 0.01$ to 0.05, while the estimates of $\alpha$ remain between $-0.47$ and $-0.57$ (pooled and covariate-adjusted) and $-0.50$ to $-0.57$ (fixed effects).
 
 \begin{table}[!ht]\centering\caption{Weighted regression of $\ln\Stk_{50}$ on $\ln\Rey$.}\label{tab:stk}\input{t_stk.tex}\end{table}
-\begin{table}[!ht]\centering\caption{Sensitivity of the Stk$_{50}$ analysis to the assumed noise level.}\label{tab:sens}\input{t_sens.tex}\end{table}
+\begin{table}[!ht]\centering\caption{Sensitivity of the Stk$_{50}$ analysis to the assumed noise level.}\label{tab:sens}\footnotesize\setlength{\tabcolsep}{5pt}\input{t_sens.tex}\end{table}
 \begin{figure}[!ht]\centering\includegraphics[width=0.55\textwidth]{fig_stk50.png}\caption{$\Stk_{50}$ versus Re for 73 conditions (colour: geometry; bars: $\pm 2$ bootstrap s.d.), pooled fit and slope $-0.5$ reference line.}\label{fig:stk}\end{figure}
 
 % =====================================================================
@@ -378,11 +396,11 @@ This study set out to provide an honest, reproducible assessment of what machine
 
 Random point-wise validation, the protocol used in virtually all prior studies on this database, yields $R^2 \approx 0.95$---a number that looks impressive but measures interpolation along known grade-efficiency curves rather than prediction of unseen designs. When whole geometries are withheld from training, $R^2$ drops to 0.73--0.75 (RMSE $\approx 0.17$), with a spread of 0.10--0.14 across repeated splits. This gap of roughly 0.2 in $R^2$ is the central quantitative result of the paper, and it implies that published accuracy figures should be interpreted with caution when the intended use involves a new geometry.
 
-The six tree-based learners we tested are statistically equivalent under geometry-grouped validation, and all of them comfortably outperform the Lapple ($R^2 \approx 0.29$) and Stokes-only ($R^2 \approx 0.44$) baselines. We find no reason to prefer one algorithm over another on this database; the choice among gradient-boosting variants, random forests, and histogram-based boosters is essentially immaterial here.
+The six tree-based learners we tested exhibit similar average performance under geometry-grouped validation, with split-to-split variability substantially larger than the differences between their mean scores. No clear ranking can therefore be established on this database. All of them comfortably outperform the Lapple ($R^2 \approx 0.29$) and Stokes-only ($R^2 \approx 0.44$) baselines.
 
 The 17 engineered features---including a vortical-capture group $\PiVC$ calibrated within training folds---yield small, consistent gains under tuned hyperparameters on grouped splits (RMSE reduction of 0.001--0.011) and a substantial gain for the neural network under grouped splits with fixed hyperparameters ($R^2$: 0.51$\to$0.69). However, neither gain transfers to LOGO validation: the paired bootstrap 95\% interval of the macro-RMS difference contains zero for every model. The constants of $\PiVC$ are poorly identified out-of-fold, and a freely fitted Reynolds exponent converges to $+0.43$ rather than the assumed $-0.5$, reflecting the intrinsic collinearity between Stk and Re. We therefore describe $\PiVC$ as a data-fitted dimensionless group rather than a validated physical descriptor, and we note that the separation/geometry terms ($\Stk/\sqrt{\Rey}$, $ab/D_e^2$) contribute more to the modest gains observed than does $\PiVC$ itself.
 
-The Mahalanobis extrapolation indicator is not validated as a predictor of LOGO failure (Spearman $\rho = 0.13$, $p = 0.50$), and we withdraw the practitioner rule proposed earlier. The heteroscedastic interval model under-covers at the 95\% level and requires an inflation factor of approximately 1.3; a geometry-calibrated conformal rescaling achieves 95\% mean per-geometry coverage but only 64.5\% for the worst geometry, so it is an average guarantee rather than a per-geometry one. The cut-diameter exponent ($-0.46$ to $-0.55$) is compatible with the Barth-type $\Rey^{-1/2}$ scaling but cannot be disentangled from geometry effects in this database, where Re and geometry are 98.7\% collinear.
+The Mahalanobis extrapolation indicator is not validated as a predictor of LOGO failure (Spearman $\rho = 0.13$, $p = 0.50$), and we withdraw the practitioner rule proposed earlier. The heteroscedastic interval model under-covers at the 95\% level and requires an inflation factor of approximately 1.3; a geometry-calibrated conformal rescaling achieves 95\% mean per-geometry coverage but only 64.5\% for the worst geometry, so this represents empirical mean coverage within the available database, not a formal guarantee for an arbitrary unseen geometry. The cut-diameter exponent ($-0.46$ to $-0.55$) is compatible with the Barth-type $\Rey^{-1/2}$ scaling but cannot be disentangled from geometry effects in this database, where Re and geometry are 98.7\% collinear.
 
 Taken together, these results do not constitute a failure of machine learning for cyclone efficiency prediction---the models clearly outperform semi-empirical correlations---but they do establish a conservative, honest baseline against which future improvements can be measured, and they identify the specific conditions under which current data-driven models should and should not be trusted. The database, the code, and all results are publicly available to support further work.
 
@@ -402,7 +420,7 @@ The paired bootstrap procedure resamples the 28 geometries (with replacement, sa
 
 \begin{table}[!ht]\centering
 \caption{Full paired bootstrap results (2000 replicates): macro-RMS and arithmetic-mean differences.}
-\label{tab:bootstrap_app}\small
+\label{tab:bootstrap_app}\footnotesize\setlength{\tabcolsep}{3pt}
 \begin{tabular}{lrrrrrrrr}
 \toprule
 & \multicolumn{4}{c}{Macro-RMS} & \multicolumn{4}{c}{Arithmetic mean} \\
@@ -420,21 +438,22 @@ MLP      & 0.235 & 0.198 & $-0.036$ & $[-0.080, +0.011]$ & 0.207 & 0.184 & $-0.0
 \end{tabular}
 \end{table}
 
+\clearpage
 \begin{thebibliography}{99}\small
 \bibitem{hoffmann}A.C. Hoffmann, L.E. Stein, Gas Cyclones and Swirl Tubes, 2nd ed., Springer, Berlin, 2007.
-\bibitem{bregolin}E. Bregolin, P. Danieli, M. Masi, A review and a new dataset for cyclone efficiency prediction, Waste 2 (2024) 240--257. doi:10.3390/waste2020014
+\bibitem{bregolin}E. Bregolin, P. Danieli, M. Masi, Collection efficiency of cyclone separators: Comparison between new machine learning-based models and semi-empirical approaches, Waste 2 (3) (2024) 240--257. doi:10.3390/waste2030014
 \bibitem{rineng}Dianyu E, Yuhao Zhang, Cong Tan, Hongwei Hu, Jiaxin Cui, Chengfang Yuan, Zongyan Zhou, Caibin Wu, Ruiping Zou, Shibo Kuang, Aibing Yu, An adaptive multi-objective optimization and control framework for hydrocyclone operation under dynamic particle-size distributions, Results in Engineering 29 (2026) 109026. doi:10.1016/j.rineng.2026.109026
 \bibitem{mineng}Dianyu E, Yuhao Zhang, Hongwei Hu, Guangtai Xu, Lin Liu, Jiaxin Cui, Cong Tan, Ruiping Zou, Shibo Kuang, CFD data-driven CNN-LSTM for fast prediction of instantaneous flow characteristics in hydrocyclones, Minerals Engineering 235 (2026) 109814. doi:10.1016/j.mineng.2025.109814
-\bibitem{seppur}W. Wu, J. Chen, X. Yang, T. Zhang, Z. Huang, L. Yang, J. Zhang, H. Liao, A combined machine learning and mechanistic model for quickly predicting three-dimensional inner states of hydrocyclones, Separation and Purification Technology 379 (2025) 135046. doi:10.1016/j.seppur.2025.135046
+\bibitem{seppur}Wenbo Wu, Yuhao Zhang, Cong Tan, Jiaxin Cui, Chengfang Yuan, Zongyan Zhou, Caibin Wu, Ruiping Zou, Dianyu E, Shibo Kuang, A combined machine learning and mechanistic model for quickly predicting three-dimensional inner states of hydrocyclones, Separation and Purification Technology 379 (2025) 135046. doi:10.1016/j.seppur.2025.135046
 \bibitem{e2024}Dianyu E, Guangtai Xu, Jiaxin Cui, Qing Ye, Cong Tan, Ruiping Zou, Aibing Yu, Shibo Kuang, Prediction of instantaneous flow characteristics of hydrocyclone with long short-term memory network based on computational fluid dynamics data, Powder Technology 439 (2024) 119668. doi:10.1016/j.powtec.2024.119668
 \bibitem{e2025}Dianyu E, Hongwei Hu, Qing Ye, Cong Tan, Jiaxin Cui, Zongyan Zhou, Ruiping Zou, Aibing Yu, Shibo Kuang, Multi-objective optimization of hydrocyclones inlet configurations for improving separation performance, Powder Technology 456 (2025) 120772. doi:10.1016/j.powtec.2025.120772
-\bibitem{lapple}C.E. Lapple, Processes use many collector types, Chemical Engineering Progress 47 (1951) 548--556.
+\bibitem{lapple}C.E. Lapple, Processes use many collector types, Chemical Engineering 58 (5) (1951) 144--151.
 \bibitem{barth}W. Barth, Berechnung und Auslegung von Zyklonabscheidern auf Grund neuerer Untersuchungen, Brennstoff-W\"arme-Kraft 8 (1956) 1--9.
 \bibitem{muschel}E. Muschelknautz, M. Trefz, Design and calculation of cyclones, in: VDI Heat Atlas, VDI-Verlag, D\"usseldorf, 1990.
 \bibitem{hoffmann92}A.C. Hoffmann, A. van Santen, R.W.K. Allen, R. Clift, Effects of geometry and solid loading on the performance of gas cyclones, Powder Technology 70 (1992) 83--91.
 \bibitem{dirgo}J. Dirgo, D. Leith, Cyclone collection efficiency: comparison of experimental results with theoretical predictions, Aerosol Science and Technology 4 (1985) 401--415.
-\bibitem{elsayed}K. Elsayed, C. Lacor, The effect of cyclone inlet dimensions on the flow pattern and performance, Powder Technology 212 (2011) 115--133.
-\bibitem{zhao}B. Zhao, Y. Su, Artificial neural network-based modeling of pressure drop and cyclone collection efficiency, Environmental Science \& Technology 54 (2020) 5913--5922.
+\bibitem{elsayed}K. Elsayed, C. Lacor, The effect of cyclone inlet dimensions on the flow pattern and performance, Applied Mathematical Modelling 35 (4) (2011) 1952--1968. doi:10.1016/j.apm.2010.11.007
+\bibitem{zhao}B. Zhao, Y. Su, Artificial neural network-based modeling of pressure drop coefficient for cyclone separators, Chemical Engineering Research and Design 88 (5--6) (2010) 606--613. doi:10.1016/j.cherd.2009.11.010
 \bibitem{karniadakis}G.E. Karniadakis, I.G. Kevrekidis, L. Lu, P. Perdikaris, S. Wang, L. Yang, Physics-informed machine learning, Nature Reviews Physics 3 (2021) 422--440.
 \end{thebibliography}
 \end{document}

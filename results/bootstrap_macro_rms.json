@@ -1,7 +1,7 @@
 {
  "GBR": {
   "macro_raw": 0.1794,
-  "macro_full14": 0.1798,
+  "macro_full17": 0.1798,
   "delta_macro": 0.0004,
   "ci_macro": [
    -0.017,
@@ -15,7 +15,7 @@
  },
  "XGB": {
   "macro_raw": 0.1852,
-  "macro_full14": 0.1779,
+  "macro_full17": 0.1779,
   "delta_macro": -0.0073,
   "ci_macro": [
    -0.0326,
@@ -29,7 +29,7 @@
  },
  "LGBM": {
   "macro_raw": 0.1715,
-  "macro_full14": 0.1731,
+  "macro_full17": 0.1731,
   "delta_macro": 0.0017,
   "ci_macro": [
    -0.0134,
@@ -43,7 +43,7 @@
  },
  "CatBoost": {
   "macro_raw": 0.1883,
-  "macro_full14": 0.1789,
+  "macro_full17": 0.1789,
   "delta_macro": -0.0093,
   "ci_macro": [
    -0.019,
@@ -57,7 +57,7 @@
  },
  "RF": {
   "macro_raw": 0.1795,
-  "macro_full14": 0.1865,
+  "macro_full17": 0.1865,
   "delta_macro": 0.007,
   "ci_macro": [
    -0.0091,
@@ -71,7 +71,7 @@
  },
  "HGB": {
   "macro_raw": 0.1749,
-  "macro_full14": 0.1782,
+  "macro_full17": 0.1782,
   "delta_macro": 0.0033,
   "ci_macro": [
    -0.0151,
@@ -85,7 +85,7 @@
  },
  "MLP": {
   "macro_raw": 0.2347,
-  "macro_full14": 0.1983,
+  "macro_full17": 0.1983,
   "delta_macro": -0.0364,
   "ci_macro": [
    -0.0802,

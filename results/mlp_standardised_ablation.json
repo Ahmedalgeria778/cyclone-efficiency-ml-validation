@@ -1,0 +1,22 @@
+[
+  {
+    "fset": "raw (standardized)",
+    "pooled_r2": 0.5071104924472989,
+    "pooled_rmse": 0.23784023312543323,
+    "pooled_mae": 0.17547945508960006,
+    "macro_rms": 0.23022904777121528,
+    "weighted_r2_g_mean": 0.23642399049604262,
+    "median_r2_g": 0.553957706653067,
+    "n_r2_le_0": 5
+  },
+  {
+    "fset": "17 features (standardized)",
+    "pooled_r2": 0.6485469989241839,
+    "pooled_rmse": 0.20083720249903464,
+    "pooled_mae": 0.14650023019269842,
+    "macro_rms": 0.19162534286227537,
+    "weighted_r2_g_mean": 0.3852880576864152,
+    "median_r2_g": 0.7501693335483995,
+    "n_r2_le_0": 3
+  }
+]

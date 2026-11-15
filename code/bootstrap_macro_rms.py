@@ -12,7 +12,7 @@ PG = pd.read_csv('logo_per_geom.csv')
 gl = sorted(PG.gid.unique())
 G  = len(gl)
 
-# --- Compute macro-RMS for raw and full14 for each model ---
+# --- Compute macro-RMS for raw and full17 for each model ---
 # macro-RMS = sqrt( (1/G) * sum_g RMSE_g^2 )
 
 models = ['GBR', 'XGB', 'LGBM', 'CatBoost', 'RF', 'HGB', 'MLP']
@@ -24,7 +24,7 @@ B = 2000  # bootstrap replicates
 
 for mn in models:
     raw = PG[(PG.fset == 'raw') & (PG.model == mn)].set_index('gid').loc[gl]
-    ful = PG[(PG.fset == 'full14') & (PG.model == mn)].set_index('gid').loc[gl]
+    ful = PG[(PG.fset == 'full17') & (PG.model == mn)].set_index('gid').loc[gl]
 
     # Align geometries (ensure same set)
     common = raw.index.intersection(ful.index)
@@ -62,13 +62,13 @@ for mn in models:
     results.append({
         'model': mn,
         'macro_raw': round(macro_raw, 4),
-        'macro_full14': round(macro_ful, 4),
+        'macro_full17': round(macro_ful, 4),
         'delta_macro': round(delta_macro, 4),
         'ci_macro_lo': round(ci_macro[0], 4),
         'ci_macro_hi': round(ci_macro[1], 4),
         'n_better_macro': n_better_macro,
         'mean_raw': round(mean_raw, 4),
-        'mean_full14': round(mean_ful, 4),
+        'mean_full17': round(mean_ful, 4),
         'delta_mean': round(delta_mean, 4),
         'ci_mean_lo': round(ci_mean[0], 4),
         'ci_mean_hi': round(ci_mean[1], 4),
@@ -88,7 +88,7 @@ print("-" * 90)
 for r in results:
     contains_zero = "YES" if (r['ci_macro_lo'] <= 0 <= r['ci_macro_hi']) else "NO"
     pct = r['n_better_macro'] / B * 100
-    print(f"  {r['model']:<10} {r['macro_raw']:>10.4f} {r['macro_full14']:>10.4f} "
+    print(f"  {r['model']:<10} {r['macro_raw']:>10.4f} {r['macro_full17']:>10.4f} "
           f"{r['delta_macro']:>+8.4f} {r['ci_macro_lo']:>+10.4f} {r['ci_macro_hi']:>+10.4f} "
           f"{pct:>7.1f}% {contains_zero:>6}")
 
@@ -98,7 +98,7 @@ print(f"  {'Model':<10} {'mean_raw':>10} {'mean_17':>10} {'D_mean':>8} "
       f"{'CI 2.5%':>10} {'CI 97.5%':>10}")
 print("-" * 75)
 for r in results:
-    print(f"  {r['model']:<10} {r['mean_raw']:>10.4f} {r['mean_full14']:>10.4f} "
+    print(f"  {r['model']:<10} {r['mean_raw']:>10.4f} {r['mean_full17']:>10.4f} "
           f"{r['delta_mean']:>+8.4f} {r['ci_mean_lo']:>+10.4f} {r['ci_mean_hi']:>+10.4f}")
 
 print("\n" + "=" * 90)
@@ -112,7 +112,7 @@ out = {}
 for r in results:
     out[r['model']] = {
         'macro_raw': r['macro_raw'],
-        'macro_full14': r['macro_full14'],
+        'macro_full17': r['macro_full17'],
         'delta_macro': r['delta_macro'],
         'ci_macro': [r['ci_macro_lo'], r['ci_macro_hi']],
         'delta_mean': r['delta_mean'],

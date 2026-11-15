@@ -13,14 +13,14 @@ def stk_only(tr,te):
     p,_=curve_fit(f,tr.Stk.values,tr.eta.values,p0=[10,0.5],maxfev=20000); return np.clip(f(te.Stk.values,*p),0,1)
 rows=[]
 t0=time.time()
-# ---- A: repeated grouped 23/5 splits, fixed HP (identical budget), raw vs full14
+# ---- A: repeated grouped 23/5 splits, fixed HP (identical budget), raw vs full17
 for rep in range(20):
     rng=np.random.RandomState(100+rep); te_g=rng.choice(gids,5,replace=False)
     te=df[df.gid.isin(te_g)]; tr=df[~df.gid.isin(te_g)]
     par=calibrate_pivc(tr)
     for nm,p in [('Lapple(N=5)',lapple(te)),('Lapple(N fitted)',lapple(te,fit_lapple_N(tr))),('Stk-only fit',stk_only(tr,te))]:
         rows.append(dict(protocol='fixed',rep=rep,model=nm,fset='-',**metrics(te.eta,p),n=len(te)))
-    for fs in ['raw','full14']:
+    for fs in ['raw','full17']:
         for mn in ['GBR','XGB','LGBM','CatBoost','RF','HGB','MLP']:
             p=fit_predict(mn,tr,te,fs,par)
             rows.append(dict(protocol='fixed',rep=rep,model=mn,fset=fs,**metrics(te.eta,p),n=len(te)))
@@ -32,13 +32,13 @@ for rep in range(10):
     rng=np.random.RandomState(100+rep); te_g=rng.choice(gids,5,replace=False)
     te=df[df.gid.isin(te_g)]; tr=df[~df.gid.isin(te_g)].reset_index(drop=True)
     par=calibrate_pivc(tr)
-    for fs in ['raw','full14']:
+    for fs in ['raw','full17']:
         for mn in ['GBR','XGB','LGBM','CatBoost','RF','HGB']:
             best=None
             for hp in GRID[mn]:
                 sc=[]
                 for itr,iva in GroupKFold(3).split(tr,groups=tr.gid):
-                    a=tr.iloc[itr];b=tr.iloc[iva]; pa=calibrate_pivc(a) if fs=='full14' else None
+                    a=tr.iloc[itr];b=tr.iloc[iva]; pa=calibrate_pivc(a) if fs=='full17' else None
                     p=fit_predict(mn,a,b,fs,pa,hp); sc.append(np.mean((p-b.eta.values)**2))
                 m=np.mean(sc)
                 if best is None or m<best[0]: best=(m,hp)
@@ -51,16 +51,16 @@ rows=[]
 for rep in range(20):
     rng=np.random.RandomState(200+rep); idx=rng.permutation(len(df)); k=int(.8*len(df))
     tr=df.iloc[idx[:k]]; te=df.iloc[idx[k:]]; par=calibrate_pivc(tr)
-    for fs,mn in [('raw','GBR'),('full14','GBR'),('raw','MLP'),('full14','MLP'),('raw','CatBoost')]:
+    for fs,mn in [('raw','GBR'),('full17','GBR'),('raw','MLP'),('full17','MLP'),('raw','CatBoost')]:
         p=fit_predict(mn,tr,te,fs,par); rows.append(dict(protocol='random_pointwise',rep=rep,model=mn,fset=fs,**metrics(te.eta,p),n=len(te)))
 pd.DataFrame(rows).to_csv('splits_random.csv',index=False)
-# ---- D: L2GO (60 random pairs), GBR raw vs full14
+# ---- D: L2GO (60 random pairs), GBR raw vs full17
 rows=[]
 rng=np.random.RandomState(7); allp=[(i,j) for i in gids for j in gids if i<j]
 sel=[allp[k] for k in rng.choice(len(allp),60,replace=False)]
 for (i,j) in sel:
     te=df[df.gid.isin([i,j])]; tr=df[~df.gid.isin([i,j])]; par=calibrate_pivc(tr)
-    for fs in ['raw','full14']:
+    for fs in ['raw','full17']:
         p=fit_predict('GBR',tr,te,fs,par)
         for g in (i,j):
             m=te.gid.values==g; rows.append(dict(pair=f'{i}-{j}',gid=g,fset=fs,y=te.eta.values[m],pred=p[m]))

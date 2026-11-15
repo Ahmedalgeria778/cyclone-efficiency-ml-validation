@@ -41,7 +41,7 @@ def feats(d,fset,par=None):
         X['PiVC']=pivc(d.Stk.values,d.Re.values,d.rr.values,*par[:3],(par[3] if len(par)>3 else -0.5)); return X
     if fset=='raw+sep+geo':
         X['sep']=sep; X['lnsep']=np.log(sep); X['geo']=geo; X['Stk_geo']=d.Stk*geo; X['Re_De']=d.Re*d.De; return X
-    if fset=='full14':
+    if fset=='full17':
         X=pd.concat([X,L],axis=1)
         X['PiVC']=pivc(d.Stk.values,d.Re.values,d.rr.values,*par[:3],(par[3] if len(par)>3 else -0.5))
         X['sep']=sep; X['lnsep']=np.log(sep); X['geo']=geo; X['Stk_geo']=d.Stk*geo; X['Re_De']=d.Re*d.De
